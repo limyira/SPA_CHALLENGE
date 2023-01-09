@@ -7,7 +7,6 @@ app.use("/static", express.static(current + "/front/static"));
 app.get("/*", (req, res) => {
   return res.sendFile(current + "/front/index.html");
 });
-
 app.listen(PORT, () => {
   console.log(`Server is running on ${PORT}...`);
 });

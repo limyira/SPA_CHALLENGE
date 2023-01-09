@@ -48,6 +48,11 @@ export default class extends Root {
       postA.appendChild(postBox);
       postLi.appendChild(postA);
       postUl.appendChild(postLi);
+      postA.addEventListener("click", (e) => {
+        e.preventDefault();
+        navTo(postA.href);
+      });
     });
+    console.log(posts);
   }
 }
