@@ -1,5 +1,6 @@
 import Root from "./Root.js";
-import { getAll } from "../fetch/fetch.js";
+import { getAll, getDetail } from "../fetch/fetch.js";
+import { getItemId } from "./Post.js";
 import { navTo } from "../index.js";
 export default class extends Root {
   constructor() {
@@ -26,7 +27,9 @@ export default class extends Root {
   }
   async Detail() {
     const {
-      data: { posts },
+      data: {
+        data: { posts },
+      },
     } = await getAll();
     const postList = posts.map((item) => {
       const postUl = document.querySelector("#post-list");
@@ -48,8 +51,9 @@ export default class extends Root {
       postA.appendChild(postBox);
       postLi.appendChild(postA);
       postUl.appendChild(postLi);
-      postA.addEventListener("click", (e) => {
+      postA.addEventListener("click", async (e) => {
         e.preventDefault();
+        await getItemId(item.postId);
         navTo(postA.href);
       });
     });

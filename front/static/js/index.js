@@ -12,26 +12,49 @@ export const navTo = (url) => {
 };
 
 const router = async () => {
-  const regex = new RegExp("/post/|d");
+  const regexPost = new RegExp(/\/post\/|\d/);
+  const regexEdit = new RegExp(/\/edit\/|\d/);
+  console.log(regexPost);
   const app = document.querySelector("#app");
-
   if (location.pathname === "/") {
     const view = new Home();
     app.innerHTML = await view.getHtml();
     await view.Detail();
+    const goUpload = document.querySelector("#create-post-btn");
+    console.log(goUpload);
+    goUpload.addEventListener("click", (e) => {
+      navTo(goUpload.href);
+    });
   }
-  if (regex.test(location.pathname)) {
+  if (regexPost.test(location.pathname)) {
     const view = new Post();
     app.innerHTML = await view.getHtml();
+    document.querySelector("#logo").addEventListener("click", (e) => {
+      history.back(-1);
+    });
+    const postBtn = document.querySelector("#post-update-button");
+    postBtn.addEventListener("click", async (e) => {
+      const data = await view.goEdit();
+      const goEditBtn = document.querySelector("#goEdit");
+      if (data) {
+        history.pushState(data, null, goEditBtn.href);
+        router();
+      }
+    });
+  }
+  if (regexEdit.test(location.pathname)) {
+    const view = new Edit();
+    app.innerHTML = await view.getHtml(history.state);
+    const editBtn = document.querySelector("#submit-button");
+    editBtn.addEventListener("click", (e) => {
+      history.back(-1);
+    });
   }
   if (location.pathname === "/upload") {
     const view = new Upload();
     app.innerHTML = await view.getHtml();
   }
 };
-window.addEventListener("load", (e) => {
-  console.log(e);
-});
 window.addEventListener("popstate", router);
 
 window.addEventListener("DOMContentLoaded", () => {
