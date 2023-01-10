@@ -14,14 +14,13 @@ export const navTo = (url) => {
 const router = async () => {
   const regexPost = new RegExp(/\/post\/|\d/);
   const regexEdit = new RegExp(/\/edit\/|\d/);
-  console.log(regexPost);
+
   const app = document.querySelector("#app");
   if (location.pathname === "/") {
     const view = new Home();
     app.innerHTML = await view.getHtml();
     await view.Detail();
     const goUpload = document.querySelector("#create-post-btn");
-    console.log(goUpload);
     goUpload.addEventListener("click", (e) => {
       navTo(goUpload.href);
     });
@@ -44,11 +43,13 @@ const router = async () => {
   }
   if (regexEdit.test(location.pathname)) {
     const view = new Edit();
-    app.innerHTML = await view.getHtml(history.state);
-    const editBtn = document.querySelector("#submit-button");
-    editBtn.addEventListener("click", (e) => {
-      history.back(-1);
-    });
+    if (history.state) {
+      app.innerHTML = await view.getHtml(history.state);
+      const editBtn = document.querySelector("#submit-button");
+      editBtn.addEventListener("click", (e) => {
+        history.back(-1);
+      });
+    }
   }
   if (location.pathname === "/upload") {
     const view = new Upload();

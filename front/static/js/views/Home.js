@@ -11,7 +11,7 @@ export default class extends Root {
   async getHtml() {
     return ` <main>
         <section id="page-main">
-          <div id="detail-title">
+          <div id="detail-title" style="justify-content:flex-end">
             <a id="logo" href="/" data-link='nav'>
               <strong>HPNY 2023</strong>
             </a>
@@ -43,8 +43,9 @@ export default class extends Root {
       postP.innerText = item.content;
       postImg.src = item.image;
       postA.dataset.link = "nav";
-      postA.id = "post";
+      postA.id = "postA";
       postA.href = `/post/${item.postId}`;
+      postLi.id = "post";
       postBox.appendChild(postStrong);
       postBox.appendChild(postP);
       postA.appendChild(postImg);

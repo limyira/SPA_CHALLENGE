@@ -29,7 +29,7 @@ export default class extends Root {
           ><img
             src="https://hpny-1.s3.ap-northeast-2.amazonaws.com/icon_chevron_left.svg"
             id="back-icon" /></a
-        ><a href="/#/" id="logo"><strong>HPNY 2023</strong></a>
+        ><a href="/" id="logo"><strong>HPNY 2023</strong></a>
       </div>
     </section>
   </main>
