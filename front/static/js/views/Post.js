@@ -28,7 +28,7 @@ export default class extends Root {
             <ul id="comment-list"></ul>
           </section>
           <div id="detail-title">
-            <a id="goEdit" href="/edit/${item.postId}">
+            <a id="goBack" href="/edit/${item.postId}">
               <img
                 id="back-icon"
                 src="https://hpny-1.s3.ap-northeast-2.amazonaws.com/icon_chevron_left.svg"

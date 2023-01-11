@@ -6,12 +6,11 @@ export default class extends Root {
     this.setTitle("Upload");
   }
   async getHtml() {
-    return `<main>
+    return ` <main>
     <section id="page-upload">
       <button
         id="img-add-button"
-        style="background: lightgrey; cursor: not-allowed"
-        disabled=""
+        style="background: skyblue; "
       >
         이미지 추가 완료</button
       ><input
@@ -23,13 +22,13 @@ export default class extends Root {
         id="textarea-title"
         maxlength="500"
       ></textarea
-      ><button id="submit-button" disabled="">글 작성하기</button>
+      ><button id="submit-button"  style="background: lightgrey; cursor: not-allowed;">글 작성하기</button>
       <div id="detail-title">
-        <a href="/#/" style="cursor: pointer"
+        <a id="goBack" href="/" style="cursor: pointer"
           ><img
             src="https://hpny-1.s3.ap-northeast-2.amazonaws.com/icon_chevron_left.svg"
             id="back-icon" /></a
-        ><a href="/#/" id="logo"><strong>HPNY 2023</strong></a>
+        ><a href="/" id="logo"><strong>HPNY 2023</strong></a>
       </div>
     </section>
   </main>`;

@@ -4,6 +4,7 @@ import Post from "./views/Post.js";
 import Edit from "./views/Edit.js";
 import Delete from "./views/Delete.js";
 import FZF from "./views/FZF.js";
+import { uploadPost, removeItem } from "./fetch/fetch.js";
 
 const app = document.querySelector("#app");
 export const navTo = (url) => {
@@ -11,9 +12,9 @@ export const navTo = (url) => {
   router();
 };
 
-const router = async () => {
-  const regexPost = new RegExp(/\/post\/|\d/);
-  const regexEdit = new RegExp(/\/edit\/|\d/);
+export const router = async () => {
+  const regexPost = new RegExp(/\/post\/\d{2,99}/);
+  const regexEdit = new RegExp(/\/edit\/\d{2,99}/);
 
   const app = document.querySelector("#app");
   if (location.pathname === "/") {
@@ -21,92 +22,120 @@ const router = async () => {
     app.innerHTML = await view.getHtml();
     await view.Detail();
     const goUpload = document.querySelector("#create-post-btn");
-    goUpload.addEventListener("click", (e) => {
-      navTo(goUpload.href);
-    });
+    goUpload.addEventListener(
+      "click",
+      (e) => {
+        navTo(goUpload.href);
+      },
+      { once: true }
+    );
   }
   if (regexPost.test(location.pathname)) {
     const view = new Post();
     app.innerHTML = await view.getHtml();
-    document.querySelector("#logo").addEventListener("click", (e) => {
+    const logo = document.querySelector("#logo");
+    logo.addEventListener("click", (e) => {
+      history.back(-2);
+    });
+    const goBack = document.querySelector("#goBack");
+    goBack.addEventListener("click", (e) => {
       history.back(-1);
     });
+
     const postBtn = document.querySelector("#post-update-button");
     postBtn.addEventListener("click", async (e) => {
       const data = await view.goEdit();
-      const goEditBtn = document.querySelector("#goEdit");
       if (data) {
-        history.pushState(data, null, goEditBtn.href);
+        history.pushState(data, null, location.origin + `/edit/${data.postId}`);
         router();
       }
+    });
+    const deleteBtn = document.querySelector("#post-delete-button");
+    deleteBtn.addEventListener("click", async (e) => {
+      await removeItem(history.state.postId);
+      history.pushState(null, null, location.origin);
+      router();
     });
   }
   if (regexEdit.test(location.pathname)) {
     const view = new Edit();
-    if (history.state) {
-      app.innerHTML = await view.getHtml(history.state);
-      const editBtn = document.querySelector("#submit-button");
-      editBtn.addEventListener("click", (e) => {
-        history.back(-1);
-      });
-    }
+    app.innerHTML = await view.getHtml(history.state);
+    const editBtn = document.querySelector("#submit-button");
+    editBtn.addEventListener("click", (e) => {
+      history.back(-1);
+    });
+    const logo = document.querySelector("#logo");
+    logo.addEventListener("click", (e) => {
+      history.pushState(null, null, location.origin);
+      router();
+    });
+    const goBack = document.querySelector("#goBack");
+    goBack.addEventListener("click", (e) => {
+      history.back(-1);
+    });
   }
   if (location.pathname === "/upload") {
     const view = new Upload();
     app.innerHTML = await view.getHtml();
+    const logo = document.querySelector("#logo");
+    logo.addEventListener("click", (e) => {
+      history.pushState(null, null, location.origin);
+      router();
+    });
+    const goBack = document.querySelector("#goBack");
+    goBack.addEventListener("click", (e) => {
+      history.pushState(null, null, location.origin);
+      router();
+    });
+    const submitBtn = document.querySelector("#submit-button");
+    const addImgBtn = document.querySelector("#img-add-button");
+    const title = document.querySelector("#input-title");
+    const text = document.querySelector("#textarea-title");
+    let imageUrl;
+
+    addImgBtn.addEventListener("click", async (e) => {
+      addImgBtn.style.background = "lightgrey";
+      addImgBtn.disabled = true;
+      addImgBtn.style.cursor = "not-allowed";
+      imageUrl = "https://source.unsplash.com/random/300×300";
+    });
+    if (addImgBtn.style.background !== "lightgrey") {
+    }
+    const event = [title, text];
+    event.map((i) =>
+      i.addEventListener("input", () => {
+        if (title.value && text.value) {
+          submitBtn.style.background = "skyblue";
+          submitBtn.style.cursor = "pointer";
+          submitBtn.disabled = false;
+        }
+        submitBtn.addEventListener(
+          "click",
+          async (e) => {
+            const data = {
+              title: title.value,
+              content: text.value,
+              image: imageUrl,
+            };
+            await uploadPost(data);
+            history.pushState(null, null, location.origin);
+            router();
+          },
+          { once: true }
+        );
+      })
+    );
   }
 };
 window.addEventListener("popstate", router);
 
-window.addEventListener("DOMContentLoaded", () => {
-  window.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (e.target.getAttribute("data-link") === "nav") {
-      navTo(e.target.href, null);
-    }
-  });
-  router();
-});
-
-// let routes = [
-//   { path: "/", view: Home },
-//   { path: "/upload", view: Upload },
-//   { path: "/post/:id", view: Post },
-//   { path: "/edit", view: Edit },
-//   { path: "/delete", view: Delete },
-//   { path: "/404", view: FZF },
-// ];
-// const preMatches = routes.map((route) => {
-//   return {
-//     route,
-//     isMatch: location.pathname === route.path,
-//   };
-// });
-// let match = preMatches.find((preMatch) => preMatch.isMatch);
-// if (!match) {
-//   match = {
-//     route: routes[routes.length - 1],
-//     isMatch: true,
-//   };
-// }
-
-// const views = new match.route.view();
-// app.innerHTML = await views.getHtml();
-// if (match.route.path === "/") {
-//   await views.Detail();
-// }
-// if (regex.test(location.pathname)) {
-//   const listDetail = new routes[2].view();
-//   app.innerHTML = await listDetail.getHtml();
-//   match = {
-//     route: {
-//       path: routes[2].path,
-//       view: routes[2].view,
-//     },
-//     isMatch: true,
-//   };
-// }
-// window.addEventListener("beforeunload", (e) => {
-//   const href = "/404";
-//   navTo("localhost:3001/404");
-// });
+window.addEventListener(
+  "DOMContentLoaded",
+  () => {
+    window.addEventListener("click", (e) => {
+      e.preventDefault();
+    });
+    router();
+  },
+  { once: true }
+);

@@ -1,7 +1,7 @@
 import Root from "./Root.js";
 import { getAll, getDetail } from "../fetch/fetch.js";
 import { getItemId } from "./Post.js";
-import { navTo } from "../index.js";
+import { navTo, router } from "../index.js";
 export default class extends Root {
   constructor() {
     super();
@@ -44,7 +44,7 @@ export default class extends Root {
       postImg.src = item.image;
       postA.dataset.link = "nav";
       postA.id = "postA";
-      postA.href = `/post/${item.postId}`;
+      postA.href = `/`;
       postLi.id = "post";
       postBox.appendChild(postStrong);
       postBox.appendChild(postP);
@@ -55,9 +55,9 @@ export default class extends Root {
       postA.addEventListener("click", async (e) => {
         e.preventDefault();
         await getItemId(item.postId);
-        navTo(postA.href);
+        history.pushState(item, null, location.href + `post/${item.postId}`);
+        router();
       });
     });
-    console.log(posts);
   }
 }

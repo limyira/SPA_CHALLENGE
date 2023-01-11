@@ -26,6 +26,7 @@ export default class extends Root {
         <a
           href="http://hpny.s3-website.ap-northeast-2.amazonaws.com/#/post/43"
           style="cursor: pointer"
+          id="goBack"
           ><img
             src="https://hpny-1.s3.ap-northeast-2.amazonaws.com/icon_chevron_left.svg"
             id="back-icon" /></a
