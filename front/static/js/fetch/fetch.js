@@ -22,3 +22,28 @@ export const removeItem = async (id) => {
   const response = await axios.delete(`${baseURL}/post/${id}`);
   return response;
 };
+
+export const editItem = async (data, text) => {
+  try {
+    const response = await axios.patch(`${baseURL}/post/${data.postId}`, {
+      title: text.title,
+      content: text.content,
+      image: data.image,
+    });
+    return response;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const uploadComment = async (data, text) => {
+  try {
+    const response = await axios.post(`${baseURL}/comment/${data.postId}`, {
+      content: text,
+    });
+    console.log(response);
+    return response;
+  } catch (err) {
+    console.log(err);
+  }
+};

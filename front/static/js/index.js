@@ -4,7 +4,12 @@ import Post from "./views/Post.js";
 import Edit from "./views/Edit.js";
 import Delete from "./views/Delete.js";
 import FZF from "./views/FZF.js";
-import { uploadPost, removeItem } from "./fetch/fetch.js";
+import {
+  uploadPost,
+  removeItem,
+  editItem,
+  uploadComment,
+} from "./fetch/fetch.js";
 
 const app = document.querySelector("#app");
 export const navTo = (url) => {
@@ -22,6 +27,7 @@ export const router = async () => {
     app.innerHTML = await view.getHtml();
     await view.Detail();
     const goUpload = document.querySelector("#create-post-btn");
+
     goUpload.addEventListener(
       "click",
       (e) => {
@@ -32,8 +38,18 @@ export const router = async () => {
   }
   if (regexPost.test(location.pathname)) {
     const view = new Post();
-    app.innerHTML = await view.getHtml();
+    app.innerHTML = await view.getHtml(history.state);
     const logo = document.querySelector("#logo");
+    const commentInput = document.querySelector("#comment-input");
+    const commentBtn = document.querySelector("#comment-button");
+    commentBtn.addEventListener("click", async (e) => {
+      if (commentInput.value.length === 0) {
+        alert("글자를 입력해주세요.");
+      } else {
+        await uploadComment(history.state, commentInput.value);
+      }
+    });
+
     logo.addEventListener("click", (e) => {
       history.back(-2);
     });
@@ -50,6 +66,7 @@ export const router = async () => {
         router();
       }
     });
+
     const deleteBtn = document.querySelector("#post-delete-button");
     deleteBtn.addEventListener("click", async (e) => {
       await removeItem(history.state.postId);
@@ -61,8 +78,18 @@ export const router = async () => {
     const view = new Edit();
     app.innerHTML = await view.getHtml(history.state);
     const editBtn = document.querySelector("#submit-button");
+    const editTitle = document.querySelector("#input-title");
+    const editInput = document.querySelector("#textarea-title");
+    const eventArr = [editTitle, editInput];
     editBtn.addEventListener("click", (e) => {
-      history.back(-1);
+      eventArr.map(async (i) => {
+        await editItem(history.state, {
+          title: editTitle.value,
+          content: editInput.value,
+        });
+      });
+      history.pushState(null, null, location.origin);
+      router();
     });
     const logo = document.querySelector("#logo");
     logo.addEventListener("click", (e) => {

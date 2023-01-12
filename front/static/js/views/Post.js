@@ -8,24 +8,33 @@ export default class extends Root {
     super();
     this.setTitle("Post");
   }
-  async getHtml() {
+  async getHtml(item) {
+    const { comments, post } = item;
+    const [...coment] = comments;
     return `
       <main>
         <section id="page-detail">
           <article id="post-article">
-            <img id="post-img" src=${item.image}></img>
-            <strong>${item.title}</strong>
-            <span>${item.createdAt}</span>
-            <p>${item.content}</p>
+            <img id="post-img" src=${post.image}></img>
+            <strong>${post.title}</strong>
+            <span>${post.createdAt}</span>
+            <p>${post.content}</p>
             <button id="post-update-button" data-link>수정</button>
             <button id="post-delete-button" data-link>삭제</button>
           </article>
           <section id="comment-section">
             <form>
-              <input></input>
-              <button type="submit">게시</button>
+              <input id="comment-input"></input>
+              <button id="comment-button" type="submit">게시</button>
             </form>
-            <ul id="comment-list"></ul>
+            <ul id="comment-list">
+            ${comments
+              .map(
+                (comment) =>
+                  `<li id="comment"><p>${comment.content}</p><button id="comment-delete-btn">삭제</button></li>`
+              )
+              .join("")}
+            </ul>
           </section>
           <div id="detail-title">
             <a id="goBack" href="/edit/${item.postId}">
@@ -48,10 +57,7 @@ export default class extends Root {
   }
 }
 export const getItemId = async (id) => {
-  const {
-    data: {
-      data: { post },
-    },
-  } = await getDetail(id);
+  const { data } = await getDetail(id);
   item = post;
+  return data;
 };

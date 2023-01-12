@@ -54,8 +54,12 @@ export default class extends Root {
       postUl.appendChild(postLi);
       postA.addEventListener("click", async (e) => {
         e.preventDefault();
-        await getItemId(item.postId);
-        history.pushState(item, null, location.href + `post/${item.postId}`);
+        const response = await getItemId(item.postId);
+        history.pushState(
+          response.data,
+          null,
+          location.href + `post/${item.postId}`
+        );
         router();
       });
     });

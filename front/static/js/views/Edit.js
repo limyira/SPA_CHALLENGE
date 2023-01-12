@@ -16,11 +16,12 @@ export default class extends Root {
         placeholder="글 제목을 작성해주세요."
         id="input-title"
         maxlength="50"
+        value=${state.title}
       /><textarea
         placeholder="글 내용을 작성해주세요."
         id="textarea-title"
         maxlength="500"
-      ></textarea
+      >${state.content}</textarea
       ><button id="submit-button">글 수정하기</button>
       <div id="detail-title">
         <a
