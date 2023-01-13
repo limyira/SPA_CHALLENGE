@@ -1,8 +1,6 @@
 import { getDetail } from "../fetch/fetch.js";
 import Root from "./Root.js";
 
-let item;
-
 export default class extends Root {
   constructor() {
     super();
@@ -58,6 +56,5 @@ export default class extends Root {
 }
 export const getItemId = async (id) => {
   const { data } = await getDetail(id);
-  item = post;
   return data;
 };

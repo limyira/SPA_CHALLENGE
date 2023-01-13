@@ -38,12 +38,14 @@ export const editItem = async (data, text) => {
 
 export const uploadComment = async (data, text) => {
   try {
-    const response = await axios.post(`${baseURL}/comment/${data.postId}`, {
-      content: text,
-    });
-    console.log(response);
+    const response = await axios.post(
+      `${baseURL}/comment/${data.post.postId}`,
+      {
+        content: text,
+      }
+    );
     return response;
   } catch (err) {
-    console.log(err);
+    return err;
   }
 };

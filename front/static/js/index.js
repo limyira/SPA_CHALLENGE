@@ -42,11 +42,36 @@ export const router = async () => {
     const logo = document.querySelector("#logo");
     const commentInput = document.querySelector("#comment-input");
     const commentBtn = document.querySelector("#comment-button");
+    const commentList = document.querySelector("#comment-list");
+    const [...child] = commentList.children;
+    const commentDeleteBtn = document.querySelector("#comment-delete-btn");
     commentBtn.addEventListener("click", async (e) => {
-      if (commentInput.value.length === 0) {
+      const validation = child.some((li) => {
+        return li.children[0].innerText === commentInput.value;
+      });
+      if (validation) {
+        alert("중복 댓글은 입력할수 없습니다.");
+      } else if (commentInput.value.length === 0) {
         alert("글자를 입력해주세요.");
       } else {
-        await uploadComment(history.state, commentInput.value);
+        const { response } = await uploadComment(
+          history.state,
+          commentInput.value
+        );
+        console.log({ response });
+        if (response.status === 400) {
+          alert("중복 댓글은 입력할 수 없습니다.");
+        }
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        const p = document.createElement("p");
+        li.id = "comment";
+        btn.id = "comment-delete-btn";
+        p.innerText = commentInput.value;
+        btn.innerText = "삭제";
+        li.appendChild(p);
+        li.appendChild(btn);
+        commentList.appendChild(li);
       }
     });
 
@@ -60,19 +85,18 @@ export const router = async () => {
 
     const postBtn = document.querySelector("#post-update-button");
     postBtn.addEventListener("click", async (e) => {
-      const data = await view.goEdit();
-      if (data) {
-        history.pushState(data, null, location.origin + `/edit/${data.postId}`);
-        router();
-      }
+      const data = history.state.post;
+      history.pushState(data, null, location.origin + `/edit/${data.postId}`);
+      router();
     });
 
     const deleteBtn = document.querySelector("#post-delete-button");
     deleteBtn.addEventListener("click", async (e) => {
-      await removeItem(history.state.postId);
+      await removeItem(history.state.post.postId);
       history.pushState(null, null, location.origin);
       router();
     });
+    commentDeleteBtn.addEventListener("click", (e) => {});
   }
   if (regexEdit.test(location.pathname)) {
     const view = new Edit();
