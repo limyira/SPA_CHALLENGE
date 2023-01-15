@@ -20,8 +20,10 @@ export const navTo = (url) => {
 };
 
 export const router = async () => {
-  const regexPost = new RegExp(/\/post\/\d{2,99}/);
-  const regexEdit = new RegExp(/\/edit\/\d{2,99}/);
+  const regexPost = new RegExp(/\/post\/\d$/);
+  const regexEdit = new RegExp(/\/edit\/\d$/);
+  // let pageId = null;
+  // console.log(pageId);
 
   const app = document.querySelector("#app");
   if (location.pathname === "/") {
@@ -29,13 +31,12 @@ export const router = async () => {
     app.innerHTML = await view.getHtml();
     await view.Detail();
     const goUpload = document.querySelector("#create-post-btn");
-
     goUpload.addEventListener("click", (e) => {
       navTo(goUpload.href);
     });
   }
-  if (regexPost.test(location.pathname)) {
-    //새로고침시 페이지이탈..
+  if (location.pathname === "/post/" + history.state?.post?.postId) {
+    // pageId = history.state?.post?.postId;
     const view = new Post();
     app.innerHTML = await view.getHtml(history.state);
     const logo = document.querySelector("#logo");
@@ -107,19 +108,21 @@ export const router = async () => {
       router();
     });
   }
-  if (regexEdit.test(location.pathname)) {
+  if (location.pathname === "/edit/" + history.state?.postId) {
+    // pageId = history.state.postId;
     const view = new Edit();
     app.innerHTML = await view.getHtml(history?.state);
     const editBtn = document.querySelector("#submit-button");
     const editTitle = document.querySelector("#input-title");
     const editInput = document.querySelector("#textarea-title");
     const eventArr = [editTitle, editInput];
-    editBtn.addEventListener("beforeload", (e) => {
+    editBtn.addEventListener("click", (e) => {
       eventArr.map(async (i) => {
         const res = await editItem(history.state, {
           title: editTitle.value,
           content: editInput.value,
         });
+        console.log(res);
         const {
           data: { data },
         } = res;
@@ -193,15 +196,26 @@ export const router = async () => {
       })
     );
   }
+  const hi = history.state;
+  const [...hello] = hi.map((i) => i.postId);
+  console.log(hello);
+  //값들을 모아옴.. 이값중에 일치하는 url이 없다면 404반환예정..
   const path = location.pathname;
   const homeMatch = path === "/";
-  const postMatch = regexPost.test(path);
-  const editMatch = regexEdit.test(path);
+  const postMatch = hi.find((post) => `/post/${post.postId}` === path);
+  console.log(postMatch);
+  const editMatch = path === "/edit/";
   const uploadMatch = path === "/upload";
   if (!homeMatch && !postMatch && !editMatch && !uploadMatch) {
     const view = new FZF();
     app.innerHTML = await view.getHtml();
+    console.log(history.state);
     history.pushState(null, null, location.origin + "/404");
+    const a = document.querySelector("a");
+    a.addEventListener("click", (e) => {
+      history.pushState(null, null, location.origin);
+      router();
+    });
   }
 };
 window.addEventListener("popstate", router);
