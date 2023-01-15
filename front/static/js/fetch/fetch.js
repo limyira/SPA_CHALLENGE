@@ -49,3 +49,12 @@ export const uploadComment = async (data, text) => {
     return err;
   }
 };
+
+export const deleteComment = async (data) => {
+  try {
+    const response = await axios.delete(`${baseURL}/comment/${data}`);
+    return response;
+  } catch (err) {
+    console.log(err);
+  }
+};
