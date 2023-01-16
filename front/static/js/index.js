@@ -23,6 +23,9 @@ export const router = async () => {
   const regexPost = /\/post\/[0-9]{0,5}/g;
   const regexEdit = /\/edit\/[0-9]{0,5}/g;
 
+  // let pageId = null;
+  // console.log(pageId);
+
   const app = document.querySelector("#app");
   if (location.pathname === "/") {
     const view = new Home();
@@ -35,6 +38,7 @@ export const router = async () => {
   }
   if (location.pathname === "/post/" + history.state?.post?.postId) {
     console.log(history.state);
+    // pageId = history.state?.post?.postId;
     const view = new Post();
     app.innerHTML = await view.getHtml(history.state);
     const logo = document.querySelector("#logo");
@@ -107,6 +111,7 @@ export const router = async () => {
     });
   }
   if (location.pathname === "/edit/" + history.state?.postId) {
+    // pageId = history.state.postId;
     const view = new Edit();
     app.innerHTML = await view.getHtml(history?.state);
     const editBtn = document.querySelector("#submit-button");
@@ -144,6 +149,7 @@ export const router = async () => {
       history.back(-1);
     });
   }
+  //upload 시 패치를 여러번 하는현상.
   if (location.pathname === "/upload") {
     const view = new Upload();
     app.innerHTML = await view.getHtml();
@@ -182,6 +188,16 @@ export const router = async () => {
           submitBtn.disabled = false;
           inputValidation = true;
         }
+        submitBtn.addEventListener("click", async (e) => {
+          const data = {
+            title: title.value,
+            content: text.value,
+            image: imageUrl,
+          };
+          await uploadPost(data);
+          history.pushState(null, null, location.origin);
+          router();
+        });
       })
     );
 
@@ -209,25 +225,46 @@ export const router = async () => {
   // const [...hello] = hi.map((i) => i.postId);
   // console.log(hello);
   //값들을 모아옴.. 이값중에 일치하는 url이 없다면 404반환예정..
-  const path = location.pathname;
-  const homeMatch = path === "/";
-  const postMatch = regexPost.test(path);
-  const editMatch = regexEdit.test(path);
-  console.log(postMatch);
-  const uploadMatch = path === "/upload";
-  if (!homeMatch && !postMatch && !editMatch && !uploadMatch) {
-    console.log(postMatch);
+  // const path = location.pathname;
+  // const homeMatch = path === "/";
+  // const postMatch = regexPost.test(path);
+  // const editMatch = regexEdit.test(path);
+  // console.log(postMatch);
+  // const uploadMatch = path === "/upload";
+  // if (!homeMatch && !postMatch && !editMatch && !uploadMatch) {
+  //   console.log(postMatch);
 
-    const view = new FZF();
-    app.innerHTML = await view.getHtml();
-    console.log(history.state);
-    history.pushState(null, null, location.origin + "/404");
-    const a = document.querySelector("a");
-    a.addEventListener("click", (e) => {
-      history.pushState(null, null, location.origin);
-      router();
-    });
-  }
+  //   const view = new FZF();
+  //   app.innerHTML = await view.getHtml();
+  //   console.log(history.state);
+  //   history.pushState(null, null, location.origin + "/404");
+  //   const a = document.querySelector("a");
+  //   a.addEventListener("click", (e) => {
+  //     history.pushState(null, null, location.origin);
+  //     router();
+  //   });
+  // }
+  // const hi = history.state;
+  // const [...hello] = hi.map((i) => i.postId);
+  // console.log(hello);
+  // //값들을 모아옴.. 이값중에 일치하는 url이 없다면 404반환예정..
+  // const path = location.pathname;
+  // const homeMatch = path === "/";
+  // const postMatch = hi.find((post) => `/post/${post.postId}` === path);
+  // console.log(postMatch);
+  // const editMatch = path === "/edit/";
+  // const uploadMatch = path === "/upload";
+  // if (!homeMatch && !postMatch && !editMatch && !uploadMatch) {
+  //   const view = new FZF();
+  //   app.innerHTML = await view.getHtml();
+  //   console.log(history.state);
+  //   history.pushState(null, null, location.origin + "/404");
+  //   const a = document.querySelector("a");
+  //   a.addEventListener("click", (e) => {
+  //     history.pushState(null, null, location.origin);
+  //     router();
+  //   });
+  // }
 };
 window.addEventListener("popstate", router);
 
