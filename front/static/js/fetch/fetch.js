@@ -5,17 +5,24 @@ export const getAll = async () => {
   return response;
 };
 export const getDetail = async (id) => {
-  const response = await axios.get(`${baseURL}/post/${id}`);
-  return response;
+  try {
+    const response = await axios.get(`${baseURL}/post/${id}`);
+    return response;
+  } catch (err) {
+    return err;
+  }
 };
 export const uploadPost = async (data) => {
-  console.log(data);
-  const response = await axios.post(`${baseURL}/post`, {
-    title: data.title,
-    content: data.content,
-    image: data.image,
-  });
-  return response;
+  try {
+    const response = await axios.post(`${baseURL}/post`, {
+      title: data.title,
+      content: data.content,
+      image: data.image,
+    });
+    return response;
+  } catch (err) {
+    return err;
+  }
 };
 
 export const removeItem = async (id) => {
@@ -47,5 +54,14 @@ export const uploadComment = async (data, text) => {
     return response;
   } catch (err) {
     return err;
+  }
+};
+
+export const deleteComment = async (data) => {
+  try {
+    const response = await axios.delete(`${baseURL}/comment/${data}`);
+    return response;
+  } catch (err) {
+    console.log(err);
   }
 };

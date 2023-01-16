@@ -9,6 +9,8 @@ import {
   removeItem,
   editItem,
   uploadComment,
+  deleteComment,
+  getDetail,
 } from "./fetch/fetch.js";
 
 const app = document.querySelector("#app");
@@ -18,8 +20,8 @@ export const navTo = (url) => {
 };
 
 export const router = async () => {
-  const regexPost = new RegExp(/\/post\/\d{2,99}/);
-  const regexEdit = new RegExp(/\/edit\/\d{2,99}/);
+  const regexPost = /\/post\/[0-9]{0,5}/g;
+  const regexEdit = /\/edit\/[0-9]{0,5}/g;
 
   const app = document.querySelector("#app");
   if (location.pathname === "/") {
@@ -27,16 +29,12 @@ export const router = async () => {
     app.innerHTML = await view.getHtml();
     await view.Detail();
     const goUpload = document.querySelector("#create-post-btn");
-
-    goUpload.addEventListener(
-      "click",
-      (e) => {
-        navTo(goUpload.href);
-      },
-      { once: true }
-    );
+    goUpload.addEventListener("click", (e) => {
+      navTo(goUpload.href);
+    });
   }
-  if (regexPost.test(location.pathname)) {
+  if (location.pathname === "/post/" + history.state?.post?.postId) {
+    console.log(history.state);
     const view = new Post();
     app.innerHTML = await view.getHtml(history.state);
     const logo = document.querySelector("#logo");
@@ -44,7 +42,24 @@ export const router = async () => {
     const commentBtn = document.querySelector("#comment-button");
     const commentList = document.querySelector("#comment-list");
     const [...child] = commentList.children;
-    const commentDeleteBtn = document.querySelector("#comment-delete-btn");
+    const commentDeleteBtns = document.querySelectorAll("#comment-delete-btn");
+    const deleteEvents = [...commentDeleteBtns];
+    deleteEvents.map((deleteEvent) => {
+      deleteEvent.addEventListener("click", async (e) => {
+        const targetText = e.target.previousSibling.innerText;
+        const { comments } = history.state;
+        const potentialTarget = comments.find(
+          (comment) => comment.content === targetText
+        );
+        const targetId = potentialTarget.commentId;
+        await deleteComment(targetId);
+        const res = await getDetail(history.state.post.postId);
+        const refreshData = res.data.data;
+        app.innerHTML = await view.getHtml(refreshData);
+        history.pushState(refreshData, null, location);
+        router();
+      });
+    });
     commentBtn.addEventListener("click", async (e) => {
       const validation = child.some((li) => {
         return li.children[0].innerText === commentInput.value;
@@ -58,20 +73,13 @@ export const router = async () => {
           history.state,
           commentInput.value
         );
-        console.log({ response });
-        if (response.status === 400) {
-          alert("중복 댓글은 입력할 수 없습니다.");
-        }
-        const li = document.createElement("li");
-        const btn = document.createElement("button");
-        const p = document.createElement("p");
-        li.id = "comment";
-        btn.id = "comment-delete-btn";
-        p.innerText = commentInput.value;
-        btn.innerText = "삭제";
-        li.appendChild(p);
-        li.appendChild(btn);
-        commentList.appendChild(li);
+
+        const res = await getDetail(history.state.post.postId);
+        const refreshData = res.data.data;
+        app.innerHTML = await view.getHtml(refreshData);
+
+        history.pushState(refreshData, null, location);
+        router();
       }
     });
 
@@ -80,7 +88,8 @@ export const router = async () => {
     });
     const goBack = document.querySelector("#goBack");
     goBack.addEventListener("click", (e) => {
-      history.back(-1);
+      navTo(location.origin);
+      router();
     });
 
     const postBtn = document.querySelector("#post-update-button");
@@ -91,29 +100,39 @@ export const router = async () => {
     });
 
     const deleteBtn = document.querySelector("#post-delete-button");
-    deleteBtn.addEventListener("click", async (e) => {
+    deleteBtn?.addEventListener("click", async (e) => {
       await removeItem(history.state.post.postId);
       history.pushState(null, null, location.origin);
       router();
     });
-    commentDeleteBtn.addEventListener("click", (e) => {});
   }
-  if (regexEdit.test(location.pathname)) {
+  if (location.pathname === "/edit/" + history.state?.postId) {
     const view = new Edit();
-    app.innerHTML = await view.getHtml(history.state);
+    app.innerHTML = await view.getHtml(history?.state);
     const editBtn = document.querySelector("#submit-button");
     const editTitle = document.querySelector("#input-title");
     const editInput = document.querySelector("#textarea-title");
     const eventArr = [editTitle, editInput];
     editBtn.addEventListener("click", (e) => {
       eventArr.map(async (i) => {
-        await editItem(history.state, {
+        const res = await editItem(history.state, {
           title: editTitle.value,
           content: editInput.value,
         });
+        console.log(res);
+        const {
+          data: { data },
+        } = res;
+        const { postId } = data.post;
+        const detailResponse = await getDetail(postId);
+        console.log(detailResponse);
+        history.pushState(
+          detailResponse.data.data,
+          null,
+          location.origin + `/post/${data.post.postId}`
+        );
+        router();
       });
-      history.pushState(null, null, location.origin);
-      router();
     });
     const logo = document.querySelector("#logo");
     logo.addEventListener("click", (e) => {
@@ -142,51 +161,79 @@ export const router = async () => {
     const addImgBtn = document.querySelector("#img-add-button");
     const title = document.querySelector("#input-title");
     const text = document.querySelector("#textarea-title");
-    let imageUrl;
+    const imageUrl = "https://source.unsplash.com/random/300×300";
 
     addImgBtn.addEventListener("click", async (e) => {
       addImgBtn.style.background = "lightgrey";
       addImgBtn.disabled = true;
       addImgBtn.style.cursor = "not-allowed";
-      imageUrl = "https://source.unsplash.com/random/300×300";
+      imageUrl;
     });
     if (addImgBtn.style.background !== "lightgrey") {
     }
     const event = [title, text];
+    let inputValidation = false;
     event.map((i) =>
-      i.addEventListener("input", () => {
+      i.addEventListener("input", (e) => {
         if (title.value && text.value) {
+          e.preventDefault();
           submitBtn.style.background = "skyblue";
           submitBtn.style.cursor = "pointer";
           submitBtn.disabled = false;
+          inputValidation = true;
         }
-        submitBtn.addEventListener(
-          "click",
-          async (e) => {
-            const data = {
-              title: title.value,
-              content: text.value,
-              image: imageUrl,
-            };
-            await uploadPost(data);
-            history.pushState(null, null, location.origin);
-            router();
-          },
-          { once: true }
-        );
       })
     );
+
+    submitBtn.addEventListener("click", async (e) => {
+      console.log(title.value, text.value);
+      if (inputValidation && title.value && text.value) {
+        const data = {
+          title: title.value,
+          content: text.value,
+          image: imageUrl,
+        };
+        const res = await uploadPost(data);
+        if (res.response?.status === 400) {
+          alert(res.response.data.message);
+        } else {
+          history.pushState(null, null, location.origin);
+          router();
+        }
+      } else {
+        alert("제목과 내용은 필수입니다.");
+      }
+    });
+  }
+  // const hi = history.state;
+  // const [...hello] = hi.map((i) => i.postId);
+  // console.log(hello);
+  //값들을 모아옴.. 이값중에 일치하는 url이 없다면 404반환예정..
+  const path = location.pathname;
+  const homeMatch = path === "/";
+  const postMatch = regexPost.test(path);
+  const editMatch = regexEdit.test(path);
+  console.log(postMatch);
+  const uploadMatch = path === "/upload";
+  if (!homeMatch && !postMatch && !editMatch && !uploadMatch) {
+    console.log(postMatch);
+
+    const view = new FZF();
+    app.innerHTML = await view.getHtml();
+    console.log(history.state);
+    history.pushState(null, null, location.origin + "/404");
+    const a = document.querySelector("a");
+    a.addEventListener("click", (e) => {
+      history.pushState(null, null, location.origin);
+      router();
+    });
   }
 };
 window.addEventListener("popstate", router);
 
-window.addEventListener(
-  "DOMContentLoaded",
-  () => {
-    window.addEventListener("click", (e) => {
-      e.preventDefault();
-    });
-    router();
-  },
-  { once: true }
-);
+window.addEventListener("DOMContentLoaded", () => {
+  window.addEventListener("click", (e) => {
+    e.preventDefault();
+  });
+  router();
+});

@@ -31,6 +31,7 @@ export default class extends Root {
         data: { posts },
       },
     } = await getAll();
+    history.pushState(posts, null, location.origin);
     const postList = posts.map((item) => {
       const postUl = document.querySelector("#post-list");
       const postLi = document.createElement("li");
@@ -55,6 +56,7 @@ export default class extends Root {
       postA.addEventListener("click", async (e) => {
         e.preventDefault();
         const response = await getItemId(item.postId);
+        console.log(response)
         history.pushState(
           response.data,
           null,
