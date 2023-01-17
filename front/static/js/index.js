@@ -72,26 +72,23 @@ export const router = async () => {
         });
       });
       commentBtn.addEventListener("click", async (e) => {
-        const text = child.some((li) => {
-          return li.children[0].innerText === commentInput.value;
-        });
-        if (validation) {
-          alert("중복 댓글은 입력할수 없습니다.");
-        } else if (commentInput.value.length === 0) {
-          alert("글자를 입력해주세요.");
-        } else {
-          const { response } = await uploadComment(
-            history.state,
-            commentInput.value
-          );
+        // const text = child.some((li) => {
+        //   return li.children[0].innerText === commentInput.value;
+        // });
 
-          const res = await getDetail(history.state.post.postId);
-          const refreshData = res.data.data;
-          app.innerHTML = await view.getHtml(refreshData);
-
-          history.pushState(refreshData, null, location);
-          router();
+        const { response } = await uploadComment(
+          history.state,
+          commentInput.value
+        );
+        if (response?.status === 400) {
+          alert(response?.data.message);
         }
+        const res = await getDetail(history.state.post.postId);
+        const refreshData = res.data.data;
+        app.innerHTML = await view.getHtml(refreshData);
+
+        history.pushState(refreshData, null, location);
+        router();
       });
 
       logo.addEventListener("click", (e) => {
