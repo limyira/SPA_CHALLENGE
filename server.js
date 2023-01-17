@@ -10,6 +10,3 @@ app.get("/*", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on ${PORT}...`);
 });
-
-//hQYZ8PhTCePfXmIpvtCY
-//5BjRzmACICvbun1LEpaYearbnbjJ2eFKCmSDWzkU
