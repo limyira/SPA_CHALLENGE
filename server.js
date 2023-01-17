@@ -8,5 +8,6 @@ app.get("/*", (req, res) => {
   return res.sendFile(current + "/front/index.html");
 });
 app.listen(PORT, () => {
+  process.send("ready");
   console.log(`Server is running on ${PORT}...`);
 });
