@@ -56,7 +56,6 @@ export default class extends Root {
       postA.addEventListener("click", async (e) => {
         e.preventDefault();
         const response = await getItemId(item.postId);
-        console.log(response)
         history.pushState(
           response.data,
           null,

@@ -39,7 +39,7 @@ export const editItem = async (data, text) => {
     });
     return response;
   } catch (err) {
-    console.log(err);
+    return err;
   }
 };
 

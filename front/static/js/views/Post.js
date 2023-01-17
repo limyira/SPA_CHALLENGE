@@ -47,7 +47,7 @@ export default class extends Root {
           </div>
         </section>
       </main>
-    `;
+  `;
   }
   async goEdit() {
     const data = item;

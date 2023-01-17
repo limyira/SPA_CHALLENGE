@@ -13,18 +13,27 @@ import {
   getDetail,
 } from "./fetch/fetch.js";
 
-const app = document.querySelector("#app");
 export const navTo = (url) => {
   history.pushState(null, null, url);
   router();
 };
 
 export const router = async () => {
-  const regexPost = /\/post\/[0-9]{0,5}/g;
-  const regexEdit = /\/edit\/[0-9]{0,5}/g;
-
+  const path = location.pathname;
   const app = document.querySelector("#app");
-  if (location.pathname === "/") {
+  const page404 = async () => {
+    const pageNotfound = new FZF();
+    app.innerHTML = await pageNotfound.getHtml();
+    const a = document.querySelector("a");
+    if (a) {
+      a.addEventListener("click", (e) => {
+        history.pushState(null, null, location.origin);
+        router();
+      });
+    }
+  };
+
+  if (path === "/") {
     const view = new Home();
     app.innerHTML = await view.getHtml();
     await view.Detail();
@@ -33,118 +42,136 @@ export const router = async () => {
       navTo(goUpload.href);
     });
   }
-  if (location.pathname === "/post/" + history.state?.post?.postId) {
-    console.log(history.state);
+  if (path.indexOf("post") === 1) {
     const view = new Post();
-    app.innerHTML = await view.getHtml(history.state);
-    const logo = document.querySelector("#logo");
-    const commentInput = document.querySelector("#comment-input");
-    const commentBtn = document.querySelector("#comment-button");
-    const commentList = document.querySelector("#comment-list");
-    const [...child] = commentList.children;
-    const commentDeleteBtns = document.querySelectorAll("#comment-delete-btn");
-    const deleteEvents = [...commentDeleteBtns];
-    deleteEvents.map((deleteEvent) => {
-      deleteEvent.addEventListener("click", async (e) => {
-        const targetText = e.target.previousSibling.innerText;
-        const { comments } = history.state;
-        const potentialTarget = comments.find(
-          (comment) => comment.content === targetText
-        );
-        const targetId = potentialTarget.commentId;
-        await deleteComment(targetId);
-        const res = await getDetail(history.state.post.postId);
-        const refreshData = res.data.data;
-        app.innerHTML = await view.getHtml(refreshData);
-        history.pushState(refreshData, null, location);
-        router();
-      });
-    });
-    commentBtn.addEventListener("click", async (e) => {
-      const validation = child.some((li) => {
-        return li.children[0].innerText === commentInput.value;
-      });
-      if (validation) {
-        alert("중복 댓글은 입력할수 없습니다.");
-      } else if (commentInput.value.length === 0) {
-        alert("글자를 입력해주세요.");
-      } else {
-        const { response } = await uploadComment(
-          history.state,
-          commentInput.value
-        );
-
-        const res = await getDetail(history.state.post.postId);
-        const refreshData = res.data.data;
-        app.innerHTML = await view.getHtml(refreshData);
-
-        history.pushState(refreshData, null, location);
-        router();
-      }
-    });
-
-    logo.addEventListener("click", (e) => {
-      history.back(-2);
-    });
-    const goBack = document.querySelector("#goBack");
-    goBack.addEventListener("click", (e) => {
-      navTo(location.origin);
-      router();
-    });
-
-    const postBtn = document.querySelector("#post-update-button");
-    postBtn.addEventListener("click", async (e) => {
-      const data = history.state.post;
-      history.pushState(data, null, location.origin + `/edit/${data.postId}`);
-      router();
-    });
-
-    const deleteBtn = document.querySelector("#post-delete-button");
-    deleteBtn?.addEventListener("click", async (e) => {
-      await removeItem(history.state.post.postId);
-      history.pushState(null, null, location.origin);
-      router();
-    });
-  }
-  if (location.pathname === "/edit/" + history.state?.postId) {
-    const view = new Edit();
-    app.innerHTML = await view.getHtml(history?.state);
-    const editBtn = document.querySelector("#submit-button");
-    const editTitle = document.querySelector("#input-title");
-    const editInput = document.querySelector("#textarea-title");
-    const eventArr = [editTitle, editInput];
-    editBtn.addEventListener("click", (e) => {
-      eventArr.map(async (i) => {
-        const res = await editItem(history.state, {
-          title: editTitle.value,
-          content: editInput.value,
+    if (history.state) {
+      app.innerHTML = await view.getHtml(history.state);
+      const logo = document.querySelector("#logo");
+      const commentInput = document.querySelector("#comment-input");
+      const commentBtn = document.querySelector("#comment-button");
+      const commentList = document.querySelector("#comment-list");
+      const [...child] = commentList.children;
+      const commentDeleteBtns = document.querySelectorAll(
+        "#comment-delete-btn"
+      );
+      const deleteEvents = [...commentDeleteBtns];
+      deleteEvents.map((deleteEvent) => {
+        deleteEvent.addEventListener("click", async (e) => {
+          const targetText = e.target.previousSibling.innerText;
+          const { comments } = history.state;
+          const potentialTarget = comments.find(
+            (comment) => comment.content === targetText
+          );
+          const targetId = potentialTarget.commentId;
+          await deleteComment(targetId);
+          const res = await getDetail(history.state.post.postId);
+          const refreshData = res.data.data;
+          app.innerHTML = await view.getHtml(refreshData);
+          history.pushState(refreshData, null, location);
+          router();
         });
-        console.log(res);
-        const {
-          data: { data },
-        } = res;
-        const { postId } = data.post;
-        const detailResponse = await getDetail(postId);
-        console.log(detailResponse);
-        history.pushState(
-          detailResponse.data.data,
-          null,
-          location.origin + `/post/${data.post.postId}`
-        );
+      });
+      commentBtn.addEventListener("click", async (e) => {
+        const text = child.some((li) => {
+          return li.children[0].innerText === commentInput.value;
+        });
+        if (validation) {
+          alert("중복 댓글은 입력할수 없습니다.");
+        } else if (commentInput.value.length === 0) {
+          alert("글자를 입력해주세요.");
+        } else {
+          const { response } = await uploadComment(
+            history.state,
+            commentInput.value
+          );
+
+          const res = await getDetail(history.state.post.postId);
+          const refreshData = res.data.data;
+          app.innerHTML = await view.getHtml(refreshData);
+
+          history.pushState(refreshData, null, location);
+          router();
+        }
+      });
+
+      logo.addEventListener("click", (e) => {
+        history.pushState(null, null, location.origin);
         router();
       });
-    });
-    const logo = document.querySelector("#logo");
-    logo.addEventListener("click", (e) => {
-      history.pushState(null, null, location.origin);
-      router();
-    });
-    const goBack = document.querySelector("#goBack");
-    goBack.addEventListener("click", (e) => {
-      history.back(-1);
-    });
+      const goBack = document.querySelector("#goBack");
+      goBack.addEventListener("click", (e) => {
+        navTo(location.origin);
+        router();
+      });
+
+      const postBtn = document.querySelector("#post-update-button");
+      postBtn.addEventListener("click", async (e) => {
+        const data = history.state.post;
+        history.pushState(data, null, location.origin + `/edit/${data.postId}`);
+        router();
+      });
+
+      const deleteBtn = document.querySelector("#post-delete-button");
+      deleteBtn?.addEventListener("click", async (e) => {
+        await removeItem(history.state.post.postId);
+        history.pushState(null, null, location.origin);
+        router();
+      });
+    } else {
+      page404();
+    }
   }
-  if (location.pathname === "/upload") {
+  if (path.indexOf("edit") === 1) {
+    const view = new Edit();
+    if (history.state) {
+      app.innerHTML = await view.getHtml(history.state);
+      const editBtn = document.querySelector("#submit-button");
+      const editTitle = document.querySelector("#input-title");
+      const editInput = document.querySelector("#textarea-title");
+      editBtn.addEventListener("click", async (e) => {
+        if (editTitle.value !== "" && editInput.value !== "") {
+          const res = await editItem(history.state, {
+            title: editTitle.value,
+            content: editInput.value,
+          });
+          if (res.response?.status === 400) {
+            if (res.response.data.error.includes("title")) {
+              alert("타이틀이 중복되는 게시물이 있습니다.");
+            } else {
+              alert("내용이 중복되는 게시물이 있습니다.");
+            }
+          } else {
+            const {
+              data: { data },
+            } = res;
+            const { postId } = data.post;
+            const detailResponse = await getDetail(postId);
+            history.pushState(
+              detailResponse.data.data,
+              null,
+              location.origin + `/post/${data.post.postId}`
+            );
+            router();
+          }
+        } else {
+          alert("타이틀과 내용은 필수 입니다.");
+        }
+      });
+
+      const logo = document.querySelector("#logo");
+      logo.addEventListener("click", (e) => {
+        history.pushState(null, null, location.origin);
+        router();
+      });
+      const goBack = document.querySelector("#goBack");
+      goBack.addEventListener("click", (e) => {
+        history.back(-1);
+      });
+    } else {
+      page404();
+    }
+  }
+  if (path === "/upload") {
     const view = new Upload();
     app.innerHTML = await view.getHtml();
     const logo = document.querySelector("#logo");
@@ -203,50 +230,14 @@ export const router = async () => {
       }
     });
   }
-  // const hi = history.state;
-  // const [...hello] = hi.map((i) => i.postId);
-  // console.log(hello);
-  //값들을 모아옴.. 이값중에 일치하는 url이 없다면 404반환예정..
-  // const path = location.pathname;
-  // const homeMatch = path === "/";
-  // const postMatch = regexPost.test(path);
-  // const editMatch = regexEdit.test(path);
-  // console.log(postMatch);
-  // const uploadMatch = path === "/upload";
-  // if (!homeMatch && !postMatch && !editMatch && !uploadMatch) {
-  //   console.log(postMatch);
-
-  //   const view = new FZF();
-  //   app.innerHTML = await view.getHtml();
-  //   console.log(history.state);
-  //   history.pushState(null, null, location.origin + "/404");
-  //   const a = document.querySelector("a");
-  //   a.addEventListener("click", (e) => {
-  //     history.pushState(null, null, location.origin);
-  //     router();
-  //   });
-  // }
-  // const hi = history.state;
-  // const [...hello] = hi.map((i) => i.postId);
-  // console.log(hello);
-  // //값들을 모아옴.. 이값중에 일치하는 url이 없다면 404반환예정..
-  // const path = location.pathname;
-  // const homeMatch = path === "/";
-  // const postMatch = hi.find((post) => `/post/${post.postId}` === path);
-  // console.log(postMatch);
-  // const editMatch = path === "/edit/";
-  // const uploadMatch = path === "/upload";
-  // if (!homeMatch && !postMatch && !editMatch && !uploadMatch) {
-  //   const view = new FZF();
-  //   app.innerHTML = await view.getHtml();
-  //   console.log(history.state);
-  //   history.pushState(null, null, location.origin + "/404");
-  //   const a = document.querySelector("a");
-  //   a.addEventListener("click", (e) => {
-  //     history.pushState(null, null, location.origin);
-  //     router();
-  //   });
-  // }
+  if (
+    path !== "/" &&
+    path !== "/upload" &&
+    path.indexOf("post") !== 1 &&
+    path.indexOf("edit") !== 1
+  ) {
+    page404();
+  }
 };
 window.addEventListener("popstate", router);
 
