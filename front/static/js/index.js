@@ -23,9 +23,6 @@ export const router = async () => {
   const regexPost = /\/post\/[0-9]{0,5}/g;
   const regexEdit = /\/edit\/[0-9]{0,5}/g;
 
-  // let pageId = null;
-  // console.log(pageId);
-
   const app = document.querySelector("#app");
   if (location.pathname === "/") {
     const view = new Home();
@@ -38,7 +35,6 @@ export const router = async () => {
   }
   if (location.pathname === "/post/" + history.state?.post?.postId) {
     console.log(history.state);
-    // pageId = history.state?.post?.postId;
     const view = new Post();
     app.innerHTML = await view.getHtml(history.state);
     const logo = document.querySelector("#logo");
@@ -111,7 +107,6 @@ export const router = async () => {
     });
   }
   if (location.pathname === "/edit/" + history.state?.postId) {
-    // pageId = history.state.postId;
     const view = new Edit();
     app.innerHTML = await view.getHtml(history?.state);
     const editBtn = document.querySelector("#submit-button");
@@ -149,7 +144,6 @@ export const router = async () => {
       history.back(-1);
     });
   }
-  //upload 시 패치를 여러번 하는현상.
   if (location.pathname === "/upload") {
     const view = new Upload();
     app.innerHTML = await view.getHtml();
@@ -188,21 +182,9 @@ export const router = async () => {
           submitBtn.disabled = false;
           inputValidation = true;
         }
-        submitBtn.addEventListener("click", async (e) => {
-          const data = {
-            title: title.value,
-            content: text.value,
-            image: imageUrl,
-          };
-          await uploadPost(data);
-          history.pushState(null, null, location.origin);
-          router();
-        });
       })
     );
-
     submitBtn.addEventListener("click", async (e) => {
-      console.log(title.value, text.value);
       if (inputValidation && title.value && text.value) {
         const data = {
           title: title.value,
